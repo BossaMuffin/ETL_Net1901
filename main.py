@@ -1,22 +1,23 @@
 #!/usr/bin/env python
 # coding: utf-8
+# Bossa Muffin Scrapping net1901.org Program v1 - 07/09/2022
 
 import sys
 # !{sys.executable} sudo -m pip install --upgrade pip
 # !{sys.executable} sudo -m pip install fake-useragent
-
-# Bossa Muffin Scrapping net1901.org Program v1 - 07/09/2022
-import lib_display as ds
-from fake_useragent import UserAgent
 import requests
-from bs4 import BeautifulSoup
 import csv
 from time import time
+from fake_useragent import UserAgent
+from bs4 import BeautifulSoup
+import lib_display as ds
 
-class Arguments:
+
+class ScriptArguments:
     """
-    Classdocs
+    Gère les arguments nécessaires au fonctionnement du script
     """
+
     def __init__(self, num_department, id_theme, user_tag):
         self.nb_args: int = self._checkArgs()
         self.arg_1 = num_department
@@ -27,7 +28,8 @@ class Arguments:
 
     def _selectArgs(self):
         """
-        :return: void
+        On récupère les arguments passés au script
+        :return:
         """
         if self.nb_args < 4:
             self.arg_3 = self._enterTheTag()
@@ -51,7 +53,6 @@ class Arguments:
               f"\n\t 2) Id theme of the association : {self.arg_2}"
               f"\n\t 3) A subjective tag to name the files of this current call {self.arg_3}")
 
-
     def _checkArgs(self):
         """
         :return: int = number of agrs
@@ -73,7 +74,6 @@ class Arguments:
 
         return nb_args
 
-
     def _enterTheTag(self):
         """
         :return: int = a int tag from the user to name the filenames
@@ -92,13 +92,14 @@ class Arguments:
                 user_validation = input(f"Your tag is : {tag}, are you agree with that ? "
                                         f"(press y:yes, or other:no, or q:quit) > ")
 
-            except ValueError:
+            except ValueError as error:
                 if tag == 'q':
                     exit("Ok! bye, bye :)")
                 else:
-                    print("Error : Your input isn't an integer ")
+                    print(f"Error {error} : Your input isn't an integer ")
 
         return tag
+
 
 class Scrap:
     """
@@ -214,7 +215,6 @@ class Scrap:
         else:
             ds.countdown(2, p_show=False)
 
-
     def getAllItemsInPagesByScrappedFiles(self):
         """
         Scrap the page of each search result (ex : associations) find in the main page (results of the main search).
@@ -244,25 +244,27 @@ class Scrap:
 
                     try:
                         result['Nom'] = assoc.find('h4', class_="list-group-item-heading").text
-                    except:
+                    except Exception:
                         pass
 
                     try:
                         result['Ville'] = assoc.find('p', class_="list-group-item-text").text.split(' / ')[0]
-                    except:
+                    except Exception:
                         pass
 
                     try:
                         result['Lien'] = assoc['href']
-                    except:
+                    except Exception:
                         pass
-                    
+
                     # Don't flood the server !!!!
                     if self.DELAY:
                         self._waitOneOrTwoSecond(k)
+
                     result = self._getAllItemsInItemPage(result)
                     tab_results.append(result)
                     print(f"{k} : {result['Nom']} > OK")
+                    # on incrémente le numéro du résultat
                     k += 1
 
         return tab_results
@@ -281,18 +283,18 @@ class Scrap:
             try:
                 result['Rue'] = soup_assoc.find('span', attrs={'itemprop': "streetAddress"}).text
                 result['Rue'] = result['Rue'].replace(",", " ")
-            except:
+            except Exception:
                 pass
 
             try:
                 result['CP'] = soup_assoc.find('span', attrs={'itemprop': "postalCode"}).text
-            except:
+            except Exception:
                 pass
             try:
                 text_temp = soup_assoc.find('div', class_="well").text.split("Objet : ")[1]
                 result['Objet'] = text_temp.split("R.N.A : ")[0].replace(",", "/")
                 result['RNA'] = text_temp.split("R.N.A : ")[1].split("Activités : ")[0]
-            except:
+            except Exception:
                 pass
 
         return result
@@ -323,7 +325,7 @@ if __name__ == "__main__":
     id_theme = 134
     tag = 1
 
-    args = Arguments(num_department, id_theme, tag)
+    args = ScriptArguments(num_department, id_theme, tag)
 
     start_time = time()
 
